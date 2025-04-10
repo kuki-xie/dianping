@@ -61,12 +61,18 @@ public class ShopTypeServiceImpl extends ServiceImpl<ShopTypeMapper, ShopType> i
             return Result.fail("店铺类型不存在！！");
         }
         // 查到了转为json字符串，存入redis
+        /*
+        4. 将查询结果存入Redis缓存：
+        将从数据库查询到的店铺类型列表转换为JSON字符串后，存入shopTypes列表中。
+        然后使用leftPushAll方法将整个列表存入Redis缓存中，
+        以便后续查询可以直接从缓存获取，减少数据库访问。
+         */
         for (ShopType shopType : tmp) {
             String jsonStr = JSONUtil.toJsonStr(shopType);
             shopTypes.add(jsonStr);
         }
         stringRedisTemplate.opsForList().leftPushAll(CACHE_SHOP_TYPE_KEY, shopTypes);
-        // 最终把查询到的商户分类信息返回给前端
+        // 5. 最终把查询到的商户分类信息返回给前端
         return Result.ok(tmp);
     }
 }
